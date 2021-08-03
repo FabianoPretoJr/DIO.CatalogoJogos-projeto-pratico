@@ -13,7 +13,7 @@ namespace Catalogo.Jogos.Controllers.V1
 {
     [Route("api/V1/[controller]")]
     [ApiController]
-    public class JogosController : ControllerBase //PAREI NA PARTE 4
+    public class JogosController : ControllerBase
     {
         private readonly IJogoService _jogoService;
 
