@@ -1,4 +1,5 @@
 ﻿using Catalogo.Jogos.Entities;
+using Catalogo.Jogos.Exceptions;
 using Catalogo.Jogos.InputModel;
 using Catalogo.Jogos.Repositories;
 using Catalogo.Jogos.ViewModel;
@@ -31,29 +32,82 @@ namespace Catalogo.Jogos.Services
             }).ToList();
         }
 
-        public Task Atualizar(Guid id, JogoInputModel jogo)
+        public async Task<JogoViewModel> Obter(Guid id)
         {
-            throw new NotImplementedException();
+            var jogo = await _jogoRepository.Obter(id);
+
+            if (jogo == null)
+                return null;
+
+            return new JogoViewModel
+            {
+                Id = jogo.Id,
+                Nome = jogo.Nome,
+                Produtora = jogo.Produtora,
+                Preco = jogo.Preco
+            };
         }
 
-        public Task Atualizar(Guid id, double preco)
+        public async Task<JogoViewModel> Inserir(JogoInputModel jogo)
         {
-            throw new NotImplementedException();
+            var entidadeJogo = await _jogoRepository.Obter(jogo.Nome, jogo.Produtora);
+
+            if (entidadeJogo.Count > 0)
+                throw new JogoJaCadastradoException();
+
+            var jogoInsert = new Jogo
+            {
+                Id = Guid.NewGuid(),
+                Nome  = jogo.Nome,
+                Produtora = jogo.Produtora,
+                Preco = jogo.Preco
+            };
+
+            await _jogoRepository.Inserir(jogoInsert);
+
+            return new JogoViewModel
+            {
+                Id = jogoInsert.Id,
+                Nome = jogo.Nome,
+                Produtora = jogo.Produtora,
+                Preco = jogo.Preco
+            };
         }
 
-        public Task<JogoViewModel> Inserir(JogoInputModel jogo)
+        public async Task Atualizar(Guid id, JogoInputModel jogo)
         {
-            throw new NotImplementedException();
+            var entidadeJogo = await _jogoRepository.Obter(id);
+
+            if (entidadeJogo == null)
+                throw new JogoNaoCadastradoException();
+
+            entidadeJogo.Nome = jogo.Nome;
+            entidadeJogo.Produtora = jogo.Produtora;
+            entidadeJogo.Preco = jogo.Preco;
+
+            await _jogoRepository.Atualizar(entidadeJogo);
         }
 
-        public Task<JogoViewModel> Obter(Guid id)
+        public async Task Atualizar(Guid id, double preco)
         {
-            throw new NotImplementedException();
+            var entidadeJogo = await _jogoRepository.Obter(id);
+
+            if (entidadeJogo == null)
+                throw new JogoNaoCadastradoException();
+
+            entidadeJogo.Preco = preco;
+
+            await _jogoRepository.Atualizar(entidadeJogo);
         }
 
-        public Task Remover(Guid id)
+        public async Task Remover(Guid id)
         {
-            throw new NotImplementedException();
+            var jogo = await _jogoRepository.Obter(id);
+
+            if (jogo == null)
+                throw new JogoNaoCadastradoException();
+
+            await _jogoRepository.Remover(id);
         }
 
         public void Dispose()
